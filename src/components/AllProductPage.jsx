@@ -19,16 +19,21 @@ const AllProductPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(0);
-  const [isFilter, setIsFilter] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
-  const [selectedRatings, setSelectedRatings] = useState([]);
+  // Temporary filter states
+  const [tempCategories, setTempCategories] = useState([]);
+  const [tempSubCategories, setTempSubCategories] = useState([]);
+  const [tempRatings, setTempRatings] = useState([]);
+  const [tempPriceRange, setTempPriceRange] = useState({ min: null, max: null });
+  // Applied filter states
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+  const [selectedRatings, setSelectedRatings] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: null, max: null });
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]); // New state for filtered products
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Extract search query from URL
   const getSearchQuery = () => {
@@ -37,40 +42,39 @@ const AllProductPage = () => {
   };
 
   const getCategoryFunction = async () => {
-    await axios
-      .get(`${USER_BASE_URL}/api/category`)
-      .then((response) => setCategoryList(response?.data))
-      .catch((error) => console.error(error));
+    try {
+      const response = await axios.get(`${USER_BASE_URL}/api/category`);
+      setCategoryList(response?.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const getSubCategoryFunction = async () => {
-    await axios
-      .get(`${USER_BASE_URL}/api/subcategory`)
-      .then((response) => setSubCategoryList(response?.data))
-      .catch((error) => console.error(error));
+    try {
+      const response = await axios.get(`${USER_BASE_URL}/api/subcategory`);
+      setSubCategoryList(response?.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const getProductDataFunction = async (datas) => {
+  const getProductDataFunction = async (page = currentPage, filters = {}) => {
     try {
       setLoading(true);
       const response = await axios.post(
         `${USER_BASE_URL}/api/products/all-products`,
         {
-          page: datas?.page ? datas?.page : currentPage,
-          perPage: datas?.perPage ? datas?.perPage : perPage,
+          page,
+          perPage,
           filter: {
-            category: datas?.filter
-              ? datas?.filter?.category
-              : selectedCategories,
-            subcat: datas?.filter
-              ? datas?.filter?.subcat
-              : selectedSubCategories,
-            price: datas?.filter ? datas?.filter?.price : priceRange,
-            rating: datas?.filter ? datas?.filter?.rating : selectedRatings,
+            category: filters.category || selectedCategories,
+            subcat: filters.subcat || selectedSubCategories,
+            price: filters.price || priceRange,
+            rating: filters.rating || selectedRatings,
           },
         }
       );
-      setIsFilter(false);
       setProducts(response?.data?.products || []);
       setTotalPages(Math.ceil((response?.data?.totalProducts || 0) / perPage));
       setLoading(false);
@@ -78,6 +82,42 @@ const AllProductPage = () => {
       setError(err.message);
       setLoading(false);
     }
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    // Update applied states for UI consistency
+    setSelectedCategories(tempCategories);
+    setSelectedSubCategories(tempSubCategories);
+    setSelectedRatings(tempRatings);
+    setPriceRange(tempPriceRange);
+    // Call API with temporary filter states directly
+    getProductDataFunction(1, {
+      category: tempCategories,
+      subcat: tempSubCategories,
+      price: tempPriceRange,
+      rating: tempRatings,
+    });
+    setCurrentPage(1); // Reset to first page
+  };
+
+  // Clear filters
+  const clearFilters = () => {
+    setTempCategories([]);
+    setTempSubCategories([]);
+    setTempRatings([]);
+    setTempPriceRange({ min: null, max: null });
+    setSelectedCategories([]);
+    setSelectedSubCategories([]);
+    setSelectedRatings([]);
+    setPriceRange({ min: null, max: null });
+    setCurrentPage(1); // Reset to first page
+    getProductDataFunction(1, {
+      category: [],
+      subcat: [],
+      price: { min: null, max: null },
+      rating: [],
+    });
   };
 
   // Filter products based on search query
@@ -101,15 +141,17 @@ const AllProductPage = () => {
     }
   }, [products, searchQuery]);
 
-  // Fetch categories, subcategories, and products
+  // Fetch categories, subcategories, and initial products
   useEffect(() => {
     getCategoryFunction();
     getSubCategoryFunction();
-  }, []);
+    getProductDataFunction();
+  }, []); // Initial fetch only
 
+  // Fetch products when currentPage changes
   useEffect(() => {
     getProductDataFunction();
-  }, [currentPage, selectedCategories, selectedSubCategories, priceRange, selectedRatings]);
+  }, [currentPage]); // Only trigger on page change
 
   const handleAddToWishlist = async (productId, e) => {
     e.stopPropagation();
@@ -158,23 +200,20 @@ const AllProductPage = () => {
   };
 
   const handleCategoryToggle = (cat) => {
-    setIsFilter(true);
-    setSelectedCategories((prev) =>
+    setTempCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
-    setSelectedSubCategories([]);
+    setTempSubCategories([]); // Reset subcategories when category changes
   };
 
   const handleSubCategoryToggle = (subcat) => {
-    setIsFilter(true);
-    setSelectedSubCategories((prev) =>
+    setTempSubCategories((prev) =>
       prev.includes(subcat) ? prev.filter((c) => c !== subcat) : [...prev, subcat]
     );
   };
 
   const handleRatingToggle = (rating) => {
-    setIsFilter(true);
-    setSelectedRatings((prev) =>
+    setTempRatings((prev) =>
       prev.includes(rating) ? prev.filter((r) => r !== rating) : [...prev, rating]
     );
   };
@@ -228,7 +267,7 @@ const AllProductPage = () => {
                   <label className="flex items-center space-x-2 py-1">
                     <input
                       type="checkbox"
-                      checked={selectedCategories.includes(cat?.id)}
+                      checked={tempCategories.includes(cat?.id)}
                       onChange={() => handleCategoryToggle(cat?.id)}
                       className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 accent-[#393185]"
                     />
@@ -247,18 +286,14 @@ const AllProductPage = () => {
             </h3>
             <ul className="p-2 px-4">
               {subCategoryList
-                ?.filter((sub) => selectedCategories.includes(sub.cate_id))
+                ?.filter((sub) => tempCategories.includes(sub.cate_id))
                 ?.map((subcat) => (
                   <li key={subcat?.sub_cate_id}>
                     <label className="flex items-center space-x-2 py-1">
                       <input
                         type="checkbox"
-                        checked={selectedSubCategories.includes(
-                          subcat?.sub_cate_id
-                        )}
-                        onChange={() =>
-                          handleSubCategoryToggle(subcat?.sub_cate_id)
-                        }
+                        checked={tempSubCategories.includes(subcat?.sub_cate_id)}
+                        onChange={() => handleSubCategoryToggle(subcat?.sub_cate_id)}
                         className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 accent-[#393185]"
                       />
                       <span className="text-lg lg:text-xl text-gray-400 font-medium">
@@ -282,14 +317,13 @@ const AllProductPage = () => {
                   </span>
                   <input
                     type="text"
-                    value={priceRange.min ?? ""}
+                    value={tempPriceRange.min ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setPriceRange({
-                        ...priceRange,
+                      setTempPriceRange({
+                        ...tempPriceRange,
                         min: value === "" ? null : parseInt(value) || 0,
                       });
-                      setIsFilter(true);
                     }}
                     placeholder="₹0"
                     className="border border-gray-400 rounded px-2 py-2 lg:py-3 w-full text-base lg:text-lg"
@@ -301,14 +335,13 @@ const AllProductPage = () => {
                   </span>
                   <input
                     type="text"
-                    value={priceRange.max ?? ""}
+                    value={tempPriceRange.max ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setPriceRange({
-                        ...priceRange,
+                      setTempPriceRange({
+                        ...tempPriceRange,
                         max: value === "" ? null : parseInt(value) || 9999999,
                       });
-                      setIsFilter(true);
                     }}
                     placeholder="₹2000"
                     className="border border-gray-400 rounded px-2 py-2 lg:py-3 w-full text-base lg:text-lg"
@@ -325,7 +358,7 @@ const AllProductPage = () => {
                 <label key={stars} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={selectedRatings.includes(stars)}
+                    checked={tempRatings.includes(stars)}
                     onChange={() => handleRatingToggle(stars)}
                     className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 accent-[#393185]"
                   />
@@ -346,55 +379,28 @@ const AllProductPage = () => {
             </div>
           </div>
 
-          {/* <div className="mt-4 flex justify-end gap-3">
+          <div className="mt-4 flex justify-end gap-3">
             <button
-              className="bg-[#393185] text-white px-4 py-2 rounded-lg font-bold"
-              onClick={() => {
-                if (isFilter) {
-                  getProductDataFunction();
-                }
-              }}
+              className="bg-[#393185] text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
+              onClick={applyFilters}
             >
               Apply Filter
             </button>
             <button
-              className="bg-gray-400 text-white px-4 py-2 rounded-lg font-bold"
-              onClick={() => {
-                setIsFilter(false);
-                if (
-                  selectedCategories?.length > 0 ||
-                  selectedSubCategories?.length > 0 ||
-                  (priceRange?.min !== null && priceRange?.max !== null) ||
-                  selectedRatings?.length > 0
-                ) {
-                  getProductDataFunction({
-                    page: 1,
-                    perPage: perPage,
-                    filter: {
-                      category: [],
-                      subcat: [],
-                      price: { min: null, max: null },
-                      rating: [],
-                    },
-                  });
-                  setSelectedRatings([]);
-                  setSelectedCategories([]);
-                  setSelectedSubCategories([]);
-                  setPriceRange({ min: null, max: null });
-                }
-              }}
+              className="bg-gray-400 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
+              onClick={clearFilters}
             >
               Clear Filter
             </button>
             {searchQuery && (
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold"
+                className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
                 onClick={() => navigate("/products")}
               >
                 Clear Search
               </button>
             )}
-          </div> */}
+          </div>
         </aside>
 
         <div className="col-span-2 lg:col-span-4 xl:col-span-6">

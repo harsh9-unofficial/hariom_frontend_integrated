@@ -19,10 +19,16 @@ const CombosPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryList, setCategoryList] = useState([]);
-  const [selectedRatings, setSelectedRatings] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
+  // Temporary filter states
+  const [tempCategories, setTempCategories] = useState([]);
+  const [tempSubCategories, setTempSubCategories] = useState([]);
+  const [tempRatings, setTempRatings] = useState([]);
+  const [tempPriceRange, setTempPriceRange] = useState({ min: null, max: null });
+  // Applied filter states
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+  const [selectedRatings, setSelectedRatings] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: null, max: null });
 
   const getCategoryFunction = async () => {
@@ -49,23 +55,24 @@ const CombosPage = () => {
       const response = await axios.post(
         `${USER_BASE_URL}/api/products/all-products`,
         {
-          page: page,
-          perPage: perPage,
+          page,
+          perPage,
           filter: {
             category: filters.category ?? selectedCategories,
             subcat: filters.subcat ?? selectedSubCategories,
             price: filters.price ?? priceRange,
             rating: filters.rating ?? selectedRatings,
+            combos: true, // Always apply combos filter
           },
         }
       );
 
+      // Filter for combo products (in case backend doesn't filter)
       const comboOnly = (response.data.products || []).filter(
         (p) => p.combos === true
       );
       setProducts(comboOnly);
-
-      setTotalPages(Math.ceil(response?.data?.totalProducts / perPage));
+      setTotalPages(Math.ceil((response?.data?.totalProducts || 0) / perPage));
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -76,31 +83,27 @@ const CombosPage = () => {
   useEffect(() => {
     getCategoryFunction();
     getSubCategoryFunction();
-  }, []);
+    getProductDataFunction();
+  }, []); // Initial fetch only
 
   useEffect(() => {
-    getProductDataFunction(currentPage);
-  }, [currentPage]);
+    getProductDataFunction();
+  }, [currentPage]); // Only trigger on page change
 
   const handleAddToWishlist = async (productId, e) => {
     e.stopPropagation();
-
     if (!userId || !token) {
       toast.error("Please log in to add items to your wishlist.");
       return;
     }
-
     try {
       await axios.post(
         `${USER_BASE_URL}/api/wishlist/add`,
         { productId, userId },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       toast.success("Product added to wishlist!");
       navigate("/wishlist");
     } catch (err) {
@@ -112,23 +115,18 @@ const CombosPage = () => {
 
   const handleAddToCart = async (productId, e) => {
     e.stopPropagation();
-
     if (!userId || !token) {
       toast.error("Please log in to add items to your cart.");
       return;
     }
-
     try {
       await axios.post(
         `${USER_BASE_URL}/api/cart/add`,
         { productId, userId, quantity: 1 },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       toast.success("Product added to cart!");
       navigate("/cart");
     } catch (err) {
@@ -139,7 +137,7 @@ const CombosPage = () => {
   };
 
   const handleCategoryToggle = (cat) => {
-    setSelectedCategories((prev) => {
+    setTempCategories((prev) => {
       if (cat === "All Purpose") {
         return prev.includes(cat) ? [] : ["All Purpose"];
       } else {
@@ -149,30 +147,43 @@ const CombosPage = () => {
           : [...withoutAllPurpose, cat];
       }
     });
+    setTempSubCategories([]); // Reset subcategories when category changes
   };
 
   const handleSubCategoryToggle = (subcat) => {
-    setSelectedSubCategories((prev) =>
-      prev.includes(subcat)
-        ? prev.filter((c) => c !== subcat)
-        : [...prev, subcat]
+    setTempSubCategories((prev) =>
+      prev.includes(subcat) ? prev.filter((c) => c !== subcat) : [...prev, subcat]
     );
   };
 
   const handleRatingToggle = (rating) => {
-    setSelectedRatings((prev) =>
-      prev.includes(rating)
-        ? prev.filter((r) => r !== rating)
-        : [...prev, rating]
+    setTempRatings((prev) =>
+      prev.includes(rating) ? prev.filter((r) => r !== rating) : [...prev, rating]
     );
   };
 
   const handleApplyFilters = () => {
-    setCurrentPage(1); // Reset to first page when applying filters
-    getProductDataFunction(1);
+    // Update applied states for UI consistency
+    setSelectedCategories(tempCategories);
+    setSelectedSubCategories(tempSubCategories);
+    setSelectedRatings(tempRatings);
+    setPriceRange(tempPriceRange);
+    // Call API with temporary filter states directly
+    getProductDataFunction(1, {
+      category: tempCategories,
+      subcat: tempSubCategories,
+      price: tempPriceRange,
+      rating: tempRatings,
+      combos: true, // Ensure combos filter is applied
+    });
+    setCurrentPage(1); // Reset to first page
   };
 
   const handleClearFilters = () => {
+    setTempCategories([]);
+    setTempSubCategories([]);
+    setTempRatings([]);
+    setTempPriceRange({ min: null, max: null });
     setSelectedCategories([]);
     setSelectedSubCategories([]);
     setSelectedRatings([]);
@@ -183,7 +194,7 @@ const CombosPage = () => {
       subcat: [],
       price: { min: null, max: null },
       rating: [],
-      combos: true, // Ensure combos filter is applied even when clearing filters
+      combos: true, // Ensure combos filter is applied
     });
   };
 
@@ -229,7 +240,7 @@ const CombosPage = () => {
                   <label className="flex items-center space-x-2 py-1">
                     <input
                       type="checkbox"
-                      checked={selectedCategories.includes(cat?.id)}
+                      checked={tempCategories.includes(cat?.id)}
                       onChange={() => handleCategoryToggle(cat?.id)}
                       className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 accent-[#393185]"
                     />
@@ -248,18 +259,14 @@ const CombosPage = () => {
             </h3>
             <ul className="p-2 px-4">
               {subCategoryList
-                ?.filter((sub) => selectedCategories.includes(sub.cate_id))
+                ?.filter((sub) => tempCategories.includes(sub.cate_id))
                 ?.map((subcat) => (
                   <li key={subcat?.sub_cate_id}>
                     <label className="flex items-center space-x-2 py-1">
                       <input
                         type="checkbox"
-                        checked={selectedSubCategories.includes(
-                          subcat?.sub_cate_id
-                        )}
-                        onChange={() =>
-                          handleSubCategoryToggle(subcat?.sub_cate_id)
-                        }
+                        checked={tempSubCategories.includes(subcat?.sub_cate_id)}
+                        onChange={() => handleSubCategoryToggle(subcat?.sub_cate_id)}
                         className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 accent-[#393185]"
                       />
                       <span className="text-lg lg:text-xl text-gray-400 font-medium">
@@ -284,11 +291,11 @@ const CombosPage = () => {
                   </span>
                   <input
                     type="text"
-                    value={priceRange.min ?? ""}
+                    value={tempPriceRange.min ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setPriceRange({
-                        ...priceRange,
+                      setTempPriceRange({
+                        ...tempPriceRange,
                         min: value === "" ? null : parseInt(value) || 0,
                       });
                     }}
@@ -302,11 +309,11 @@ const CombosPage = () => {
                   </span>
                   <input
                     type="text"
-                    value={priceRange.max ?? ""}
+                    value={tempPriceRange.max ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setPriceRange({
-                        ...priceRange,
+                      setTempPriceRange({
+                        ...tempPriceRange,
                         max: value === "" ? null : parseInt(value) || 9999999,
                       });
                     }}
@@ -326,7 +333,7 @@ const CombosPage = () => {
                 <label key={stars} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={selectedRatings.includes(stars)}
+                    checked={tempRatings.includes(stars)}
                     onChange={() => handleRatingToggle(stars)}
                     className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 accent-[#393185]"
                   />
@@ -349,13 +356,13 @@ const CombosPage = () => {
 
           <div className="mt-4 flex justify-end gap-3">
             <button
-              className="bg-[#393185] text-white px-4 py-2 rounded-lg font-bold"
+              className="bg-[#393185] text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
               onClick={handleApplyFilters}
             >
               Apply Filter
             </button>
             <button
-              className="bg-gray-400 text-white px-4 py-2 rounded-lg font-bold"
+              className="bg-gray-400 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
               onClick={handleClearFilters}
             >
               Clear Filter
@@ -368,7 +375,7 @@ const CombosPage = () => {
           <div className="col-span-2 lg:col-span-4 xl:col-span-6 grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
             {products.length === 0 ? (
               <p className="text-lg text-gray-500 col-span-full">
-                No combos products match the selected filters.
+                No combo products match the selected filters.
               </p>
             ) : (
               products.map((product) => (
@@ -387,8 +394,6 @@ const CombosPage = () => {
                       }}
                     />
                     <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-15 transition-opacity duration-300" />
-
-                    {/* Icons on Hover */}
                     <div
                       className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 md:group-hover:opacity-100 transition-opacity duration-300 invisible md:visible"
                       onClick={(e) => e.stopPropagation()}
@@ -419,11 +424,13 @@ const CombosPage = () => {
               ))
             )}
           </div>
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
+          {products.length > 0 && (
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+          )}
         </div>
       </div>
     </section>
