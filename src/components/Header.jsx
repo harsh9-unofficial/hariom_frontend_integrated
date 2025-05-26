@@ -125,7 +125,7 @@ const Header = () => {
     <header className="w-full font-sans bg-[#393185] shadow-lg sticky top-0 z-50">
       {/* Top Banner */}
       <div className="bg-[#393185] text-white text-center py-2.5 text-sm md:text-base border-b border-white/20">
-        Free shipping on all orders above $499
+        Free shipping on all orders above Rs. 499
       </div>
 
       {/* Main Navigation */}
