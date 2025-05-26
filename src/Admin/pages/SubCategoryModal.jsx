@@ -199,7 +199,7 @@ const SubCategoryModal = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 rounded-md text-white bg-[#393185] hover:bg-[#3c6cd4] disabled:opacity-60"
+              className="px-4 py-2 rounded-md text-white bg-[#393185] cursor-pointer disabled:opacity-60"
             >
               {isSubmitting ? "Saving..." : "Save SubCategory"}
             </button>

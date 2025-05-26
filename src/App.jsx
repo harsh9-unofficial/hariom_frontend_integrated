@@ -40,42 +40,9 @@ import SubCategoryPage from "./components/SubCategoryPage";
 import Banner from "./Admin/pages/Banner";
 import PromoBanner from "./components/PromoBanner";
 import AdminPromoBanner from "./Admin/pages/AdminPromoBanner";
-
-// Function to decode JWT token
-function decodeJwt(token) {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error("Error decoding JWT:", error);
-    return null;
-  }
-}
-
-// Function to check if token is expired and remove it
-function checkTokenExpiration() {
-  const token = localStorage.getItem("authToken"); // Adjust key as needed
-  if (!token) return;
-
-  const decoded = decodeJwt(token);
-  if (!decoded || !decoded.exp) {
-    localStorage.removeItem("authToken");
-    return;
-  }
-
-  const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-  if (decoded.exp < currentTime) {
-    console.log("Token expired, removing from localStorage");
-    localStorage.removeItem("authToken");
-  }
-}
+import InstaSections from "./Admin/pages/InstaSections";
+import Videos from "./Admin/pages/Videos";
+import Media from "./Admin/pages/Media";
 
 const PublicLayout = () => {
   const location = useLocation();
@@ -151,13 +118,6 @@ const PublicLayout = () => {
 };
 
 function App() {
-  useEffect(() => {
-    checkTokenExpiration(); // Run on mount
-    const interval = setInterval(checkTokenExpiration, 60 * 1000); // Check every minute
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
-
   return (
     <Router>
       <Routes>
@@ -176,6 +136,9 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="banner" element={<Banner />} />
           <Route path="promoBanner" element={<AdminPromoBanner />} />
+          <Route path="insta" element={<InstaSections />} />
+          <Route path="videos" element={<Videos />} />
+          <Route path="medias" element={<Media />} />
         </Route>
       </Routes>
     </Router>

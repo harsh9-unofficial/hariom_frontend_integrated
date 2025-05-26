@@ -14,6 +14,7 @@ export default function NewArrivals() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortOption, setSortOption] = useState(""); // State for sort option
 
   // Fetch new arrival products from API
   useEffect(() => {
@@ -37,6 +38,19 @@ export default function NewArrivals() {
 
     fetchNewArrivals();
   }, []);
+
+  // Handle sorting of products
+  useEffect(() => {
+    if (products.length > 0) {
+      const sortedProducts = [...products]; // Create a copy of products array
+      if (sortOption === "low-to-high") {
+        sortedProducts.sort((a, b) => a.price - b.price);
+      } else if (sortOption === "high-to-low") {
+        sortedProducts.sort((a, b) => b.price - a.price);
+      }
+      setProducts(sortedProducts);
+    }
+  }, [sortOption]);
 
   // Function to handle adding product to wishlist
   const handleAddToWishlist = async (productId, e) => {
@@ -101,9 +115,17 @@ export default function NewArrivals() {
       <section className="py-8 lg:py-12 container mx-auto px-2 md:px-4 lg:px-10 xl:px-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl md:text-4xl font-semibold">New Arrivals</h2>
-          <button className="text-lg text-gray-600 hover:text-black">
-            View All <span className="ml-1 text-xl">▾</span>
-          </button>
+          <div className="relative">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="text-lg text-gray-600 hover:text-black bg-white border border-gray-300 rounded-md p-2 focus:outline-none"
+            >
+              <option value="">Sort By</option>
+              <option value="low-to-high">Price: Low to High</option>
+              <option value="high-to-low">Price: High to Low</option>
+            </select>
+          </div>
         </div>
         <p className="text-lg text-gray-500">Loading...</p>
       </section>
@@ -115,9 +137,17 @@ export default function NewArrivals() {
       <section className="py-8 lg:py-12 container mx-auto px-2 md:px-4 lg:px-10 xl:px-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl md:text-4xl font-semibold">New Arrivals</h2>
-          <button className="text-lg text-gray-600 hover:text-black">
-            View All <span className="ml-1 text-xl">▾</span>
-          </button>
+          <div className="relative">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="text-lg text-gray-600 hover:text-black bg-white border border-gray-300 rounded-md p-2 focus:outline-none"
+            >
+              <option value="">Sort By</option>
+              <option value="low-to-high">Price: Low to High</option>
+              <option value="high-to-low">Price: High to Low</option>
+            </select>
+          </div>
         </div>
         <p className="text-lg text-red-500">Error: {error}</p>
       </section>
@@ -128,9 +158,17 @@ export default function NewArrivals() {
     <section className="py-8 lg:py-12 container mx-auto px-2 md:px-4 lg:px-10 xl:px-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl md:text-4xl font-semibold">New Arrivals</h2>
-        <button className="text-lg text-gray-600 hover:text-black">
-          View All <span className="ml-1 text-xl">▾</span>
-        </button>
+        <div className="relative">
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="text-lg text-gray-600 hover:text-black bg-white border border-gray-300 rounded-md p-2 focus:outline-none"
+          >
+            <option value="">Sort By</option>
+            <option value="low-to-high">Price: Low to High</option>
+            <option value="high-to-low">Price: High to Low</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
@@ -157,7 +195,7 @@ export default function NewArrivals() {
                 <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-15 transition-opacity duration-300" />
 
                 <div
-                  className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity_hid md:group-hover:opacity-100 transition-opacity duration-300 invisible md:visible"
+                  className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible md:visible"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button

@@ -1,17 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { FaInstagram } from "react-icons/fa";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { HiPlay, HiPause } from "react-icons/hi2";
 import { IoVolumeMuteOutline, IoVolumeHighOutline } from "react-icons/io5";
-
-const posts = [
-  { type: "video", src: "/InstaBlock.mp4" },
-  { type: "image", src: "/images/InstaFeed.png" },
-  { type: "video", src: "/InstaBlock.mp4" },
-  { type: "image", src: "/images/InstaFeed.png" },
-  { type: "video", src: "/InstaBlock.mp4" },
-  { type: "image", src: "/images/InstaFeed.png" },
-];
+import { USER_BASE_URL } from "../config";
 
 export default function InstagramFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,9 +12,9 @@ export default function InstagramFeed() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [thumbnails, setThumbnails] = useState({});
+  const [posts, setPosts] = useState([]);
   const videoRef = useRef(null);
 
-  // Function to generate thumbnail from video
   const generateThumbnail = (videoSrc, index) => {
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
@@ -29,15 +22,14 @@ export default function InstagramFeed() {
       const context = canvas.getContext("2d");
 
       video.src = videoSrc;
+      video.crossOrigin = "anonymous";
       video.muted = true;
-      video.preload = "metadata"; // Preload metadata for faster loading
+      video.preload = "metadata";
 
-      // Ensure video is ready to capture the first frame
       video.addEventListener("loadeddata", () => {
-        video.currentTime = 0; // Explicitly set to first frame
+        video.currentTime = 0;
       });
 
-      // Capture frame when seeking is complete
       video.addEventListener("seeked", () => {
         try {
           canvas.width = video.videoWidth;
@@ -50,7 +42,6 @@ export default function InstagramFeed() {
         }
       });
 
-      // Handle errors
       video.addEventListener("error", () => {
         reject(new Error(`Failed to load video: ${videoSrc}`));
       });
@@ -59,33 +50,78 @@ export default function InstagramFeed() {
     });
   };
 
-  // Generate thumbnails for all video posts
   useEffect(() => {
-    const videoPosts = posts.filter((post) => post.type === "video");
-    Promise.all(
-      videoPosts.map((post, index) =>
-        generateThumbnail(post.src, posts.indexOf(post)).catch((error) => {
-          console.error(error);
-          return {
-            index: posts.indexOf(post),
-            thumbnailUrl: "/images/placeholder.png",
-          }; // Fallback
-        })
-      )
-    ).then((results) => {
-      const thumbnailMap = results.reduce((acc, { index, thumbnailUrl }) => {
-        acc[index] = thumbnailUrl;
-        return acc;
-      }, {});
-      setThumbnails(thumbnailMap);
-    });
+    const fetchPosts = async () => {
+      try {
+        const [imageResponse, videoResponse] = await Promise.all([
+          axios.get(`${USER_BASE_URL}/api/instasection`),
+          axios.get(`${USER_BASE_URL}/api/video`),
+        ]);
+
+        const imagePosts = Array.isArray(imageResponse.data)
+          ? imageResponse.data.map((item) => ({
+              type: "image",
+              src: `${USER_BASE_URL}${item.imageUrl}`,
+            }))
+          : [];
+        const videoPosts = Array.isArray(videoResponse.data)
+          ? videoResponse.data.map((item) => ({
+              type: "video",
+              src: `${USER_BASE_URL}${item.videoUrl}`,
+            }))
+          : [];
+
+        // Alternate image and video posts
+        const combinedPosts = [];
+        const maxLength = Math.max(imagePosts.length, videoPosts.length);
+        for (let i = 0; i < maxLength; i++) {
+          if (i < imagePosts.length) {
+            combinedPosts.push(imagePosts[i]);
+          }
+          if (i < videoPosts.length) {
+            combinedPosts.push(videoPosts[i]);
+          }
+        }
+
+        setPosts(combinedPosts);
+
+        const videoPostIndices = combinedPosts
+          .map((post, index) => (post.type === "video" ? index : -1))
+          .filter((index) => index !== -1);
+
+        Promise.all(
+          videoPostIndices.map((index) =>
+            generateThumbnail(combinedPosts[index].src, index).catch((error) => {
+              console.error(`Failed to generate thumbnail for video at index ${index}:`, error);
+              return {
+                index,
+                thumbnailUrl: "/images/placeholder.png",
+              };
+            })
+          )
+        ).then((results) => {
+          const thumbnailMap = results.reduce((acc, { index, thumbnailUrl }) => {
+            acc[index] = thumbnailUrl;
+            return acc;
+          }, {});
+          setThumbnails(thumbnailMap);
+        });
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+        setPosts([]);
+      }
+    };
+
+    fetchPosts();
   }, []);
 
-  const openModal = (post) => {
+  const handlePostClick = (post) => {
     setSelectedPost(post);
     setIsModalOpen(true);
-    setIsPlaying(true);
-    setIsMuted(true);
+    if (post.type === "video") {
+      setIsPlaying(true);
+      setIsMuted(true);
+    }
   };
 
   const closeModal = () => {
@@ -99,7 +135,9 @@ export default function InstagramFeed() {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch((error) => {
+          console.error("Error playing video:", error);
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -122,7 +160,7 @@ export default function InstagramFeed() {
           <div
             key={index}
             className="relative group overflow-hidden rounded-xl shadow cursor-pointer"
-            onClick={() => openModal(post)}
+            onClick={() => handlePostClick(post)}
           >
             <img
               src={

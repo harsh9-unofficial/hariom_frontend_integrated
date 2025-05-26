@@ -188,7 +188,9 @@ const CheckoutPage = () => {
     try {
       const response = await axios.post(
         `${USER_BASE_URL}/api/order/create`,
-        payload
+        payload, {
+            headers: { Authorization: `Bearer ${token}` },
+          }
       );
       toast.success(response.data.message || "Order placed successfully!");
       setTimeout(() => {

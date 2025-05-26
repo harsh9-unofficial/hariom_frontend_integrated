@@ -346,7 +346,7 @@ const AllProductPage = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex justify-end gap-3">
+          {/* <div className="mt-4 flex justify-end gap-3">
             <button
               className="bg-[#393185] text-white px-4 py-2 rounded-lg font-bold"
               onClick={() => {
@@ -394,7 +394,7 @@ const AllProductPage = () => {
                 Clear Search
               </button>
             )}
-          </div>
+          </div> */}
         </aside>
 
         <div className="col-span-2 lg:col-span-4 xl:col-span-6">

@@ -8,6 +8,7 @@ import {
   EnvelopeIcon,
   RectangleStackIcon,
   InboxIcon,
+  CameraIcon,
   XMarkIcon as XIcon,
   ViewColumnsIcon,
   MegaphoneIcon, // Added for Promo Banner
@@ -16,6 +17,8 @@ import {
 const Sidebar = ({ onClose }) => {
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: ChartBarIcon, exact: true },
+    { name: "Banner", path: "/admin/banner", icon: RectangleStackIcon },
+    { name: "Promo Banner", path: "/admin/promoBanner", icon: MegaphoneIcon },
     { name: "Categories", path: "/admin/categories", icon: Squares2X2Icon },
     {
       name: "SubCategories",
@@ -24,8 +27,9 @@ const Sidebar = ({ onClose }) => {
     },
     { name: "Products", path: "/admin/products", icon: ShoppingBagIcon },
     { name: "Orders", path: "/admin/orders", icon: InboxIcon },
-    { name: "Banner", path: "/admin/banner", icon: RectangleStackIcon },
-    { name: "Promo Banner", path: "/admin/promoBanner", icon: MegaphoneIcon },
+    { name: "Images", path: "/admin/insta", icon: CameraIcon },
+    { name: "Videos", path: "/admin/videos", icon: CameraIcon },
+    { name: "Medias", path: "/admin/medias", icon: CameraIcon },
     { name: "Users", path: "/admin/users", icon: UsersIcon },
     { name: "Reviews", path: "/admin/reviews", icon: StarIcon },
     { name: "Contact", path: "/admin/contact", icon: EnvelopeIcon },
