@@ -36,18 +36,20 @@ const Header = () => {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(e.target) &&
+        !e.target.closest("button[aria-label='Toggle search bar']")
+      ) {
+        setIsSearchOpen(false);
+        setShowResults(false);
+      }
+      if (
         desktopUserMenuRef.current &&
         !desktopUserMenuRef.current.contains(e.target) &&
         mobileUserMenuRef.current &&
         !mobileUserMenuRef.current.contains(e.target)
       ) {
         setIsUserMenuOpen(false);
-      }
-      if (
-        searchInputRef.current &&
-        !searchInputRef.current.contains(e.target)
-      ) {
-        setIsSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -69,7 +71,11 @@ const Header = () => {
     setIsSearchOpen((prev) => {
       const newState = !prev;
       if (newState) {
-        setTimeout(() => searchInputRef.current?.focus(), 0);
+        setTimeout(() => {
+          if (searchInputRef.current) {
+            searchInputRef.current.querySelector("input")?.focus();
+          }
+        }, 100);
       }
       return newState;
     });
@@ -77,6 +83,7 @@ const Header = () => {
   };
 
   const handleSearchChange = (e) => {
+    console.log("Search query:", e.target.value); // Debug
     setSearchQuery(e.target.value);
     setShowResults(true);
   };
@@ -89,6 +96,10 @@ const Header = () => {
 
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
+      console.log(
+        "Navigating to:",
+        `/products?search=${encodeURIComponent(searchQuery)}`
+      );
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
       setSearchQuery("");
@@ -101,21 +112,6 @@ const Header = () => {
     localStorage.clear();
     navigate("/login");
   };
-
-  // Mock search results
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const mockResults = [
-        { id: 1, name: "Product 1", images: "/images/product1.jpg" },
-        { id: 2, name: "Product 2", images: "/images/product2.jpg" },
-      ].filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults(mockResults);
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -135,8 +131,12 @@ const Header = () => {
       {/* Main Navigation */}
       <nav className="container mx-auto flex justify-between items-center px-4 md:px-5 lg:px-6 xl:px-8 py-3 bg-[#393185]">
         {/* Logos */}
-        <div className="flex items-center ">
-          <Link to="/" className="flex items-center " aria-label="Go to homepage">
+        <div className="flex items-center">
+          <Link
+            to="/"
+            className="flex items-center"
+            aria-label="Go to homepage"
+          >
             <img
               src="/images/logo-new1.png"
               alt="Harlom Chemicals Logo 1"
@@ -179,76 +179,19 @@ const Header = () => {
           ))}
         </ul>
 
-        {/* Desktop Search and Action Buttons */}
-        <div className="hidden md:flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
-          {/* Search Bar */}
-          <div className="relative" ref={searchInputRef}>
-            <button
-              onClick={toggleSearchBar}
-              className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-              aria-label="Toggle search bar"
-            >
-              <GoSearch className="text-base" />
-            </button>
-            {isSearchOpen && (
-              <div className="absolute top-12 right-0 w-72 md:w-80 lg:w-96 bg-white rounded-lg shadow-xl p-4 z-50">
-                <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-                  <GoSearch className="text-gray-500 text-base" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Search for collections..."
-                    className="flex-1 text-sm border-none focus:outline-none"
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleSearchSubmit}
-                    className="text-gray-500 hover:text-[#527557] transition-colors duration-200"
-                  >
-                    <IoArrowForward className="text-base" />
-                  </button>
-                </div>
-                <div className="mt-2 max-h-60 overflow-y-auto">
-                  {showResults && searchQuery.trim() && searchResults.length > 0 ? (
-                    searchResults.map((collection) => (
-                      <Link
-                        key={collection.id}
-                        to={`/collection/${collection.name}`}
-                        className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded transition-colors duration-200"
-                        onClick={toggleSearchBar}
-                      >
-                        {collection.images ? (
-                          <img
-                            src={collection.images}
-                            alt={collection.name}
-                            className="w-10 h-10 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded">
-                            <span className="text-gray-500 text-xs">No Image</span>
-                          </div>
-                        )}
-                        <p className="text-sm font-medium">{collection.name}</p>
-                      </Link>
-                    ))
-                  ) : showResults && searchQuery.trim() ? (
-                    <p className="text-sm text-gray-500 text-center">
-                      No collections found
-                    </p>
-                  ) : (
-                    <p className="text-sm text-gray-500 text-center">
-                      Type to search
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-2 lg:space-x-3" ref={desktopUserMenuRef}>
+        {/* Desktop Action Buttons */}
+        <div className="flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
+          <button
+            onClick={toggleSearchBar}
+            className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+            aria-label="Toggle search bar"
+          >
+            <GoSearch className="text-base" />
+          </button>
+          <div
+            className="flex items-center space-x-2 lg:space-x-3"
+            ref={desktopUserMenuRef}
+          >
             <Link
               to="/cart"
               className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
@@ -315,7 +258,9 @@ const Header = () => {
               <Link
                 to={item.path}
                 className={`${
-                  isActive(item.path) ? "text-[#393185] font-bold" : "text-black"
+                  isActive(item.path)
+                    ? "text-[#393185] font-bold"
+                    : "text-black"
                 } text-lg font-medium hover:text-[#393185] transition-colors duration-200`}
               >
                 {item.name}
@@ -324,7 +269,6 @@ const Header = () => {
           ))}
         </ul>
 
-        {/* Mobile Action Buttons */}
         <div className="space-x-4 flex justify-center" ref={mobileUserMenuRef}>
           <button
             onClick={toggleSearchBar}
@@ -386,12 +330,12 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Search */}
+      {/* Unified Search Bar for All Screens */}
       {isSearchOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-16">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-16">
           <div
             ref={searchInputRef}
-            className="bg-white w-full max-w-md mx-4 p-4 rounded-lg shadow-xl"
+            className="bg-white w-full max-w-md mx-4 p-4 rounded-lg shadow-xl md:max-w-lg lg:max-w-xl"
           >
             <div className="flex items-center gap-2">
               <GoSearch className="text-gray-500 text-lg" />
@@ -406,13 +350,13 @@ const Header = () => {
               />
               <button
                 onClick={handleSearchSubmit}
-                className="text-gray-500 hover:text-[#527557] transition-colors duration-200"
+                className="text-gray-500 hover:text-[#527557] transition-colors duration-200 cursor-pointer"
               >
                 <IoArrowForward className="text-lg" />
               </button>
               <button
                 onClick={toggleSearchBar}
-                className="text-gray-500 hover:text-[#527557] transition-colors duration-200"
+                className="text-gray-500 hover:text-[#527557] transition-colors duration-200 cursor-pointer"
               >
                 <RxCross1 className="text-lg" />
               </button>
@@ -442,7 +386,7 @@ const Header = () => {
                 ))
               ) : showResults && searchQuery.trim() ? (
                 <p className="text-sm text-gray-500 text-center">
-                  No collections found
+                  Searching...
                 </p>
               ) : (
                 <p className="text-sm text-gray-500 text-center">
