@@ -15,7 +15,9 @@ const Reviews = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${USER_BASE_URL}/api/ratings`);
+      const response = await axios.get(`${USER_BASE_URL}/api/ratings`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       setReviews(response.data);
     } catch (err) {
       setError(

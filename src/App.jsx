@@ -38,11 +38,9 @@ import CategoryProducts from "./components/CategoryProducts";
 import SubCategory from "./Admin/pages/SubCategory";
 import SubCategoryPage from "./components/SubCategoryPage";
 import Banner from "./Admin/pages/Banner";
-import PromoBanner from "./components/PromoBanner";
 import AdminPromoBanner from "./Admin/pages/AdminPromoBanner";
 import InstaSections from "./Admin/pages/InstaSections";
 import Videos from "./Admin/pages/Videos";
-import Media from "./Admin/pages/Media";
 
 const PublicLayout = () => {
   const location = useLocation();
@@ -138,7 +136,6 @@ function App() {
           <Route path="promoBanner" element={<AdminPromoBanner />} />
           <Route path="insta" element={<InstaSections />} />
           <Route path="videos" element={<Videos />} />
-          <Route path="medias" element={<Media />} />
         </Route>
       </Routes>
     </Router>

@@ -1,18 +1,15 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import {
   Star,
-  Logs,
-  Users,
   Receipt,
   ListTree,
   ShoppingBag,
   MessageCircle,
+  Users,
 } from "lucide-react";
 import axios from "axios";
 import {
   CogIcon,
-  UserIcon,
   InboxIcon,
   PhoneIcon,
   CalendarIcon,
@@ -21,7 +18,6 @@ import {
   ArrowPathIcon,
   ListBulletIcon,
   ShoppingBagIcon,
-  ChatBubbleLeftIcon,
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import { USER_BASE_URL } from "../../config";
@@ -42,104 +38,63 @@ const Dashboard = () => {
     contacts: 0,
     ratings: 0,
   });
-  // const [recentUsers, setRecentUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recentUsers, setRecentUsers] = useState([]);
   const [lastUpdated, setLastUpdated] = useState("");
-
-  // const fetchDashboardData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const token = getAuthToken();
-
-  //     if (!token) {
-  //       throw new Error("No authentication token found. Please log in.");
-  //     }
-
-  //     // Set default headers for axios
-  //     const headers = {
-  //       Authorization: `Bearer ${token}`,
-  //     };
-
-  //     // Fetch all data in parallel with token, including ratings
-  //     const [
-  //       productsRes,
-  //       ordersRes,
-  //       categoriesRes,
-  //       subCatRes,
-  //       usersRes,
-  //       contactsRes,
-  //       reviewsRes,
-  //     ] = await Promise.all([
-  //       axios.get(`${USER_BASE_URL}/api/products`, { headers }),
-  //       axios.get(`${USER_BASE_URL}/api/order/getall`, { headers }),
-  //       axios.get(`${USER_BASE_URL}/api/category`, { headers }),
-  //       axios.get(`${USER_BASE_URL}/api/subcategory`, { headers }),
-  //       axios.get(`${USER_BASE_URL}/api/users/profile`, { headers }),
-  //       axios.get(`${USER_BASE_URL}/api/contacts/getContact`, { headers }),
-  //       axios.get(`${USER_BASE_URL}/api/ratings`, { headers }), // Added ratings endpoint
-  //     ]);
-
-  //     // Get 5 most recent users
-  //     const sortedUsers = [...usersRes.data]
-  //       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  //       .slice(0, 5);
-
-  //     setStats({
-  //       products: productsRes.data.length,
-  //       orders: ordersRes.data.length,
-  //       categories: categoriesRes.data.length,
-  //       subcat: subCatRes.data.length,
-  //       users: usersRes.data.length,
-  //       contacts: contactsRes.data.length,
-  //       ratings: reviewsRes.data.length, // Set ratings count
-  //     });
-
-  //     setRecentUsers(sortedUsers);
-  //     setLastUpdated(new Date().toLocaleTimeString());
-  //   } catch (error) {
-  //     console.error("Error fetching dashboard data:", error);
-  //     if (error.message.includes("token")) {
-  //       alert(error.message); // Notify user to log in
-  //       // Optionally redirect to login page
-  //       // window.location.href = "/login";
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const fetchDashboardData = async () => {
     setLoading(true);
     if (!token) {
-      throw new Error("No authentication token found. Please log in.");
+      alert("No authentication token found. Please log in.");
+      window.location.href = "/login";
+      return;
     }
 
     const headers = {
       Authorization: `Bearer ${token}`,
     };
 
-    await axios
-      .get(`${USER_BASE_URL}/api/products/dashboardcounter`, { headers })
-      .then((response) => {
-        setLoading(false);
-        setStats({
-          products: response.data.products,
-          orders: response.data.orders,
-          categories: response.data.category,
-          subcat: response.data.subcat,
-          users: response.data.users,
-          contacts: response.data.contact,
-          ratings: response.data.reviews,
-        });
-        setLastUpdated(new Date().toLocaleTimeString());
-      })
-      .catch((error) => {
-        setLoading(false);
-        if (error.message.includes("token")) {
-          alert(error.message);
-          window.location.href = "/login";
+    try {
+      // Fetch dashboard stats
+      const statsResponse = await axios.get(
+        `${USER_BASE_URL}/api/products/dashboardcounter`,
+        { headers }
+      );
+
+      // Fetch recent users (assuming an endpoint like /api/users exists)
+      const usersResponse = await axios.get(
+        `${USER_BASE_URL}/api/users/profile`,
+        {
+          headers,
         }
+      );
+
+      setStats({
+        products: statsResponse.data.products,
+        orders: statsResponse.data.orders,
+        categories: statsResponse.data.category,
+        subcat: statsResponse.data.subcat,
+        users: statsResponse.data.users,
+        contacts: statsResponse.data.contact,
+        ratings: statsResponse.data.reviews,
       });
+
+      const sortedUsers = [...(usersResponse.data || [])]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+      setRecentUsers(sortedUsers);
+
+      setLastUpdated(new Date().toLocaleTimeString());
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      if (error.response?.status === 401) {
+        alert("Authentication error. Please log in again.");
+        window.location.href = "/login";
+      } else {
+        console.error("Error fetching dashboard data:", error);
+      }
+    }
   };
 
   useEffect(() => {
@@ -150,15 +105,14 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // const formatDate = (dateString) => {
-  //   const options = {
-  //     month: "short",
-  //     day: "numeric",
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   };
-  //   return new Date(dateString).toLocaleDateString(undefined, options);
-  // };
+  // Format date function
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const statsData = [
     {
@@ -200,8 +154,8 @@ const Dashboard = () => {
     {
       name: "Reviews",
       value: stats.ratings,
-      icon: Star, // Using Star icon from lucide-react for consistency
-      color: "bg-purple-100 text-purple-600", // Unique color for ratings
+      icon: Star,
+      color: "bg-purple-100 text-purple-600",
     },
   ];
 
@@ -269,7 +223,7 @@ const Dashboard = () => {
             <span className="text-sm text-gray-500">Last 5 users</span>
           </div>
           <div className="bg-white overflow-hidden">
-            {/* {loading ? (
+            {loading ? (
               <div className="flex justify-center items-center h-40">
                 <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
               </div>
@@ -279,11 +233,11 @@ const Dashboard = () => {
                   recentUsers.map((user) => (
                     <li
                       key={user.id}
-                      className="px-4 py-4 sm:px-6 hover:bg-gray-50"
+                      className="px-4 py-4 sm:px-6 hover:bg-gray-200"
                     >
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-indigo-600 truncate">
-                          {user.userType || "User"}
+                          {user.name || "User"}
                         </p>
                         <div className="ml-2 flex-shrink-0 flex">
                           <p
@@ -301,19 +255,15 @@ const Dashboard = () => {
                       </div>
                       <div className="mt-2 sm:flex sm:justify-between">
                         <div className="sm:flex items-center">
-                          <UserIcon className="flex-shrink-0 h-4 w-4 text-gray-400 mr-1" />
-                          <p className="text-sm text-gray-500">{user.name}</p>
+                          <Users className="flex-shrink-0 h-4 w-4 text-gray-400 mr-1" />
+                          <p className="text-sm text-gray-500">
+                            {user.username || "N/A"}
+                          </p>
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                           <CalendarIcon className="flex-shrink-0 h-4 w-4 text-gray-400 mr-1" />
                           {formatDate(user.createdAt)}
                         </div>
-                      </div>
-                      <div className="mt-2 flex items-start">
-                        <ChatBubbleLeftIcon className="flex-shrink-0 h-4 w-4 text-gray-400 mr-1 mt-1" />
-                        <p className="text-sm text-gray-500 line-clamp-2">
-                          {user.message || "No message provided"}
-                        </p>
                       </div>
                       <div className="mt-2 flex items-center">
                         <EnvelopeIcon className="flex-shrink-0 h-4 w-4 text-gray-400 mr-1" />
@@ -321,7 +271,7 @@ const Dashboard = () => {
                           href={`mailto:${user.email}`}
                           className="text-xs text-blue-600 hover:underline"
                         >
-                          {user.email}
+                          {user.email || "N/A"}
                         </a>
                         <PhoneIcon className="flex-shrink-0 h-4 w-4 text-gray-400 ml-3 mr-1" />
                         <a
@@ -339,7 +289,7 @@ const Dashboard = () => {
                   </div>
                 )}
               </ul>
-            )} */}
+            )}
           </div>
         </div>
 
@@ -366,7 +316,7 @@ const Dashboard = () => {
                 className="block p-3 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center">
-                  <Logs className="h-5 w-5 text-orange-500 mr-3" />
+                  <ListBulletIcon className="h-5 w-5 text-orange-500 mr-3" />
                   <span>Manage SubCategory</span>
                 </div>
               </Link>
