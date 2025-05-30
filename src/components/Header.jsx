@@ -181,7 +181,7 @@ const Header = () => {
             className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
             aria-label="Toggle search bar"
           >
-            <GoSearch className="text-xl xl:text-2xl" />
+            <GoSearch className="lg:text-xl xl:text-2xl" />
           </button>
           <div
             className="flex items-center space-x-2 lg:space-x-3"
@@ -192,14 +192,14 @@ const Header = () => {
               className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
               aria-label="View cart"
             >
-              <PiShoppingCart className="text-xl xl:text-2xl" />
+              <PiShoppingCart className="lg:text-xl xl:text-2xl" />
             </Link>
             <Link
               to="/wishlist"
               className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
               aria-label="View wishlist"
             >
-              <GoHeart className="text-xl xl:text-2xl" />
+              <GoHeart className="lg:text-xl xl:text-2xl" />
             </Link>
             {isAuthenticated ? (
               <div className="relative">
@@ -208,7 +208,7 @@ const Header = () => {
                   className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
                   aria-label="Toggle user menu"
                 >
-                  <RiUser3Line className="text-xl xl:text-2xl" />
+                  <RiUser3Line className="lg:text-xl xl:text-2xl" />
                 </button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg py-2 z-50">
@@ -234,7 +234,7 @@ const Header = () => {
                 className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
                 aria-label="Login"
               >
-                <RiUser3Line className="text-xl xl:text-2xl" />
+                <RiUser3Line className="lg:text-xl xl:text-2xl" />
               </Link>
             )}
           </div>
@@ -251,7 +251,7 @@ const Header = () => {
       >
         <ul className="space-y-4 py-4 px-4">
           {navLinks.map((item) => (
-            <li key={item.name}>
+            <li key={item.name} className=" text-center">
               <Link
                 to={item.path}
                 className={`${
@@ -267,7 +267,7 @@ const Header = () => {
         </ul>
 
         <div
-          className="flex justify-center space-x-3 py-4"
+          className="flex justify-center space-x-3 pb-4"
           ref={mobileUserMenuRef}
         >
           <button

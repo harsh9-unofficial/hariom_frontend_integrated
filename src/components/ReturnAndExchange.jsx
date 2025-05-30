@@ -13,7 +13,7 @@ const ReturnAndExchange = () => {
         </div>
 
         {/* Content Section */}
-        <div className="bg-white rounded-lg shadow-sm p-4 md:p-8 text-gray-700 text-base leading-relaxed space-y-6">
+        <div className="bg-white rounded-lg shadow-sm p-3 md:p-6 text-gray-700 text-base leading-relaxed space-y-6">
           <p>
             We value your satisfaction and aim to provide a smooth return or exchange
             process for our cleaning products. Please review the conditions below.

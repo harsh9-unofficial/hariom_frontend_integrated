@@ -139,7 +139,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom line */}
-      <div className="mt-6 border-t border-white pt-4 text-center px-0 text-sm py-4">
+      <div className="border-t border-white pt-4 text-center px-0 text-sm py-4">
         © 2025 HARIOM CHEMCAL. All rights reserved.
       </div>
     </footer>
