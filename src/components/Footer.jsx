@@ -105,22 +105,22 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="#" className="hover:underline">
+              <Link to="/return-exchange" className="hover:underline">
                 Return & Exchange
               </Link>
             </li>
             <li>
-              <Link to="#" className="hover:underline">
+              <Link to="/shipping-policy" className="hover:underline">
                 Shipping Policy
               </Link>
             </li>
             <li>
-              <Link to="#" className="hover:underline">
+              <Link to="/faqs" className="hover:underline">
                 FAQs
               </Link>
             </li>
             <li>
-              <Link to="#" className="hover:underline">
+              <Link to="/privacy-policy" className="hover:underline">
                 Privacy Policy
               </Link>
             </li>

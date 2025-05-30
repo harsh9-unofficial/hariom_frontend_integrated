@@ -83,7 +83,6 @@ const Header = () => {
   };
 
   const handleSearchChange = (e) => {
-    console.log("Search query:", e.target.value); // Debug
     setSearchQuery(e.target.value);
     setShowResults(true);
   };
@@ -96,10 +95,6 @@ const Header = () => {
 
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
-      console.log(
-        "Navigating to:",
-        `/products?search=${encodeURIComponent(searchQuery)}`
-      );
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
       setSearchQuery("");
@@ -124,12 +119,12 @@ const Header = () => {
   return (
     <header className="w-full font-sans bg-[#393185] shadow-lg sticky top-0 z-50">
       {/* Top Banner */}
-      <div className="bg-[#393185] text-white text-center py-2.5 text-sm md:text-base border-b border-white/20">
+      <div className="bg-[#393185] text-white text-center py-2.5 text-sm sm:text-base md:text-lg border-b border-white/20">
         Free shipping on all orders above Rs. 499
       </div>
 
       {/* Main Navigation */}
-      <nav className="container mx-auto flex justify-between items-center px-4 md:px-5 lg:px-6 xl:px-8 py-3 bg-[#393185]">
+      <nav className="container mx-auto flex justify-between items-center px-3 sm:px-4 md:px-6 lg:px-8 py-3 bg-[#393185]">
         {/* Logos */}
         <div className="flex items-center">
           <Link
@@ -140,12 +135,12 @@ const Header = () => {
             <img
               src="/images/logo-new1.png"
               alt="Harlom Chemicals Logo 1"
-              className="h-9 md:h-10 lg:h-12 cursor-pointer"
+              className="h-8 sm:h-9 md:h-10 lg:h-12 cursor-pointer"
             />
             <img
               src="/images/logo-new.png"
               alt="Harlom Chemicals Logo 2"
-              className="h-9 md:h-10 lg:h-12 cursor-pointer"
+              className="h-8 sm:h-9 md:h-10 lg:h-12 cursor-pointer"
             />
           </Link>
         </div>
@@ -154,7 +149,7 @@ const Header = () => {
         <div className="md:hidden">
           <button
             onClick={toggleMobileMenu}
-            className="text-white text-2xl focus:outline-none"
+            className="text-white text-2xl sm:text-3xl p-2 focus:outline-none"
             aria-label="Toggle mobile menu"
           >
             {isMobileMenuOpen ? <RxCross1 /> : <LuMenu />}
@@ -162,7 +157,7 @@ const Header = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <ul className="hidden md:flex items-center space-x-3 lg:space-x-5 xl:space-x-7">
+        <ul className="hidden md:flex items-center space-x-2 lg:space-x-4 xl:space-x-6">
           {navLinks.map((item) => (
             <li key={item.name}>
               <Link
@@ -171,7 +166,7 @@ const Header = () => {
                   isActive(item.path)
                     ? "text-[#558AFF] font-bold border-b-2 border-[#558AFF]"
                     : "text-white"
-                } text-sm md:text-sm lg:text-base xl:text-lg font-medium hover:text-[#558AFF] hover:border-b-2 hover:border-[#558AFF] transition-all duration-200 pb-1`}
+                } text-base lg:text-lg xl:text-xl font-medium hover:text-[#558AFF] hover:border-b-2 hover:border-[#558AFF] transition-all duration-200 pb-1`}
               >
                 {item.name}
               </Link>
@@ -180,13 +175,13 @@ const Header = () => {
         </ul>
 
         {/* Desktop Action Buttons */}
-        <div className="flex items-center space-x-2 lg:space-x-3 xl:space-x-4">
+        <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
           <button
             onClick={toggleSearchBar}
             className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
             aria-label="Toggle search bar"
           >
-            <GoSearch className="text-base" />
+            <GoSearch className="text-xl xl:text-2xl" />
           </button>
           <div
             className="flex items-center space-x-2 lg:space-x-3"
@@ -197,14 +192,14 @@ const Header = () => {
               className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
               aria-label="View cart"
             >
-              <PiShoppingCart className="text-base" />
+              <PiShoppingCart className="text-xl xl:text-2xl" />
             </Link>
             <Link
               to="/wishlist"
               className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
               aria-label="View wishlist"
             >
-              <GoHeart className="text-base" />
+              <GoHeart className="text-xl xl:text-2xl" />
             </Link>
             {isAuthenticated ? (
               <div className="relative">
@@ -213,20 +208,20 @@ const Header = () => {
                   className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
                   aria-label="Toggle user menu"
                 >
-                  <RiUser3Line className="text-base" />
+                  <RiUser3Line className="text-xl xl:text-2xl" />
                 </button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg py-2 z-50">
                     <Link
                       to="/track-order"
-                      className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+                      className="block px-3 py-2 text-sm lg:text-base text-gray-800 hover:bg-gray-100 transition-colors duration-200"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Profile
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors duration-200"
+                      className="block w-full text-left px-3 py-2 text-sm lg:text-base text-red-600 hover:bg-gray-100 transition-colors duration-200"
                     >
                       Logout
                     </button>
@@ -239,7 +234,7 @@ const Header = () => {
                 className="text-[#393185] p-2.5 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200"
                 aria-label="Login"
               >
-                <RiUser3Line className="text-base" />
+                <RiUser3Line className="text-xl xl:text-2xl" />
               </Link>
             )}
           </div>
@@ -248,11 +243,13 @@ const Header = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden bg-white transition-all pb-4 text-center ${
-          isMobileMenuOpen ? "block" : "hidden"
+        className={`md:hidden bg-white transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen
+            ? "max-h-screen opacity-100"
+            : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
-        <ul className="space-y-4 py-4 px-6">
+        <ul className="space-y-4 py-4 px-4">
           {navLinks.map((item) => (
             <li key={item.name}>
               <Link
@@ -261,7 +258,7 @@ const Header = () => {
                   isActive(item.path)
                     ? "text-[#393185] font-bold"
                     : "text-black"
-                } text-lg font-medium hover:text-[#393185] transition-colors duration-200`}
+                } text-base sm:text-lg font-medium hover:text-[#393185] transition-colors duration-200`}
               >
                 {item.name}
               </Link>
@@ -269,24 +266,27 @@ const Header = () => {
           ))}
         </ul>
 
-        <div className="space-x-4 flex justify-center" ref={mobileUserMenuRef}>
+        <div
+          className="flex justify-center space-x-3 py-4"
+          ref={mobileUserMenuRef}
+        >
           <button
             onClick={toggleSearchBar}
-            className="text-white p-3 bg-[#393185] rounded-full text-lg cursor-pointer"
+            className="text-white p-3 bg-[#393185] rounded-full text-xl cursor-pointer"
             aria-label="Toggle search bar"
           >
             <GoSearch />
           </button>
           <Link
             to="/cart"
-            className="text-white p-3 bg-[#393185] rounded-full text-lg"
+            className="text-white p-3 bg-[#393185] rounded-full text-xl"
             aria-label="View cart"
           >
             <PiShoppingCart />
           </Link>
           <Link
             to="/wishlist"
-            className="text-white p-3 bg-[#393185] rounded-full text-lg"
+            className="text-white p-3 bg-[#393185] rounded-full text-xl"
             aria-label="View wishlist"
           >
             <GoHeart />
@@ -295,7 +295,7 @@ const Header = () => {
             <div className="relative">
               <button
                 onClick={toggleUserMenu}
-                className="text-white p-3 bg-[#393185] rounded-full text-lg"
+                className="text-white p-3 bg-[#393185] rounded-full text-xl"
                 aria-label="Toggle user menu"
               >
                 <RiUser3Line />
@@ -304,14 +304,14 @@ const Header = () => {
                 <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-36 bg-white rounded-md shadow-lg py-2 z-50">
                   <Link
                     to="/track-order"
-                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 transition-colors duration-200 text-left"
+                    className="block px-3 py-2 text-sm lg:text-base text-gray-800 hover:bg-gray-100 transition-colors duration-200 text-left"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="block w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors duration-200 text-left"
+                    className="block w-full px-3 py-2 text-sm lg:text-base text-red-600 hover:bg-gray-100 transition-colors duration-200 text-left"
                   >
                     Logout
                   </button>
@@ -321,7 +321,7 @@ const Header = () => {
           ) : (
             <Link
               to="/login"
-              className="text-white p-3 bg-[#393185] rounded-full text-lg"
+              className="text-white p-3 bg-[#393185] rounded-full text-xl"
               aria-label="Login"
             >
               <RiUser3Line />
@@ -332,64 +332,66 @@ const Header = () => {
 
       {/* Unified Search Bar for All Screens */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-16">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-12 sm:pt-16">
           <div
             ref={searchInputRef}
-            className="bg-white w-full max-w-md mx-4 p-4 rounded-lg shadow-xl md:max-w-lg lg:max-w-xl"
+            className="bg-white w-full max-w-[90%] sm:max-w-md p-3 sm:p-4 rounded-lg shadow-xl"
           >
             <div className="flex items-center gap-2">
-              <GoSearch className="text-gray-500 text-lg" />
+              <GoSearch className="text-gray-500 text-lg sm:text-xl" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Search for collections..."
-                className="flex-1 text-sm border-none focus:outline-none"
+                className="flex-1 text-sm sm:text-base border-none focus:outline-none"
                 autoFocus
               />
               <button
                 onClick={handleSearchSubmit}
                 className="text-gray-500 hover:text-[#527557] transition-colors duration-200 cursor-pointer"
               >
-                <IoArrowForward className="text-lg" />
+                <IoArrowForward className="text-lg sm:text-xl" />
               </button>
               <button
                 onClick={toggleSearchBar}
                 className="text-gray-500 hover:text-[#527557] transition-colors duration-200 cursor-pointer"
               >
-                <RxCross1 className="text-lg" />
+                <RxCross1 className="text-lg sm:text-xl" />
               </button>
             </div>
-            <div className="border-t border-gray-200 mt-2 pt-2 max-h-60 overflow-y-auto">
+            <div className="border-t border-gray-200 mt-2 pt-2 max-h-48 sm:max-h-60 overflow-y-auto">
               {showResults && searchQuery.trim() && searchResults.length > 0 ? (
                 searchResults.map((collection) => (
                   <Link
                     key={collection.id}
                     to={`/collection/${collection.name}`}
-                    className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded transition-colors duration-200"
+                    className="flex items-center gap-2 sm:gap-3 p-2 hover:bg-gray-100 rounded transition-colors duration-200"
                     onClick={toggleSearchBar}
                   >
                     {collection.images ? (
                       <img
                         src={collection.images}
                         alt={collection.name}
-                        className="w-10 h-10 object-cover rounded"
+                        className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded"
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded">
-                        <span className="text-gray-500 text-xs">No Image</span>
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 flex items-center justify-center rounded">
+                        <span className="text-gray-500 text-sm">No Image</span>
                       </div>
                     )}
-                    <p className="text-sm font-medium">{collection.name}</p>
+                    <p className="text-sm sm:text-base font-medium">
+                      {collection.name}
+                    </p>
                   </Link>
                 ))
               ) : showResults && searchQuery.trim() ? (
-                <p className="text-sm text-gray-500 text-center">
+                <p className="text-sm sm:text-base text-gray-500 text-center">
                   Searching...
                 </p>
               ) : (
-                <p className="text-sm text-gray-500 text-center">
+                <p className="text-sm sm:text-base text-gray-500 text-center">
                   Type to search
                 </p>
               )}

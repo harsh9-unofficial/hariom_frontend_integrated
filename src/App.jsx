@@ -41,6 +41,10 @@ import Banner from "./Admin/pages/Banner";
 import AdminPromoBanner from "./Admin/pages/AdminPromoBanner";
 import InstaSections from "./Admin/pages/InstaSections";
 import Videos from "./Admin/pages/Videos";
+import ShippingPolicy from "./components/ShippingPolicy";
+import Faqs from "./components/Faqs";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import ReturnAndExchange from "./components/ReturnAndExchange";
 
 const PublicLayout = () => {
   const location = useLocation();
@@ -108,6 +112,10 @@ const PublicLayout = () => {
         <Route path="/track-order" element={<TrackOrderPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route path="/faqs" element={<Faqs />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/return-exchange" element={<ReturnAndExchange />} />
       </Routes>
 
       {!shouldHideFooter && <Footer />}
