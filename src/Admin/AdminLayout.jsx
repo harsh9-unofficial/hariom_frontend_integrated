@@ -17,30 +17,6 @@ const AdminLayout = () => {
       navigate("/login");
       return;
     }
-    const fetchUserData = async () => {
-      // try {
-      //   const response = await axios.get(
-      //     `${USER_BASE_URL}/users/profile/${userId}`,
-      //     {
-      //       headers: {
-      //         Authorization: `Bearer ${token}`,
-      //       },
-      //     }
-      //   );
-      //   const data = response.data.user;
-      //   setUserData({
-      //     fullname: data.fullname || "",
-      //     username: data.username || "",
-      //     phone: data.phone || "",
-      //     dob: data.dob || "",
-      //     email: data.email || "",
-      //   });
-      // } catch (err) {
-      //   console.error("Failed to fetch user data:", err);
-      // }
-    };
-
-    fetchUserData();
   }, []);
 
   return (
